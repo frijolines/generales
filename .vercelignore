@@ -1,0 +1,7 @@
+G23_csv.zip
+G23_xls.zip
+g23_xls/
+__pycache__/
+*.pyc
+.git/
+

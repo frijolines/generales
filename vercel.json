@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "name": "quick-count-alava-29n",
+  "public": true,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/extrapolate.py"
+    },
+    {
+      "source": "/censo_alava_2023.json",
+      "destination": "/public/censo_alava_2023.json"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/index.html"
+    }
+  ]
+}
+

@@ -1,0 +1,11 @@
+# Archivos comprimidos y pesados temporales
+G23_csv.zip
+G23_xls.zip
+g23_xls/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Vercel local cache
+.vercel/

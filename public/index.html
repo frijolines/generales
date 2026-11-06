@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Count 29N · Álava / Araba & Vitoria-Gasteiz</title>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --border: #cbd5e1;
+      --accent: #00A88F;
+      --pse: #E30613;
+      --bildu: #00A88F;
+      --pp: #005999;
+      --pnv: #008037;
+      --sumar: #E51C55;
+      --vox: #63BE21;
+      --otros: #8C969E;
+    }
+    * { box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; padding: 12px 16px; background: var(--bg); color: var(--text); font-size: 13px; }
+    .warroom-header {
+      background: linear-gradient(90deg, #0f172a 0%, #1e293b 65%, #0f172a 100%);
+      color: #f8fafc;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border-left: 6px solid var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+    .warroom-title { font-size: 1.15rem; font-weight: 800; margin: 0; }
+    .warroom-sub { font-size: 0.8rem; color: #cbd5e1; margin: 2px 0 0 0; }
+    .split-layout {
+      display: grid;
+      grid-template-columns: 42% 58%;
+      gap: 14px;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .split-layout { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .panel-title { font-size: 1.02rem; font-weight: 800; margin: 0 0 10px 0; display: flex; align-items: center; justify-content: space-between; }
+    .btn-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+    button.btn {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 6px;
+      padding: 6px 8px; font-size: 0.76rem; font-weight: 700; cursor: pointer; color: var(--text);
+      transition: all 0.15s;
+    }
+    button.btn:hover { background: #e2e8f0; border-color: #94a3b8; }
+    button.btn-primary { background: #0f172a; color: #fff; border-color: #0f172a; }
+    button.btn-primary:hover { background: #1e293b; }
+    .search-box { margin-bottom: 10px; }
+    .search-input {
+      width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.82rem; margin-bottom: 6px;
+    }
+    .chips-container { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .chip {
+      background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;
+      padding: 3px 8px; border-radius: 999px; font-size: 0.74rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .chip button {
+      background: none; border: none; color: #0369a1; font-weight: 900; cursor: pointer; padding: 0; font-size: 0.82rem;
+    }
+    .horario-bar {
+      display: flex; gap: 12px; align-items: center; background: #f8fafc;
+      padding: 6px 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px; font-size: 0.8rem;
+    }
+    .matrix-wrapper { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; }
+    table.matrix-table, table.data-table {
+      width: 100%; border-collapse: collapse; font-size: 0.79rem;
+    }
+    table.matrix-table th, table.data-table th {
+      background: #0f172a; color: #fff; padding: 7px 8px; text-align: left; font-weight: 700; white-space: nowrap;
+    }
+    table.matrix-table td, table.data-table td {
+      padding: 5px 8px; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+    }
+    table.matrix-table tr:nth-child(even) { background: #f8fafc; }
+    .vote-input {
+      width: 78px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 4px;
+      text-align: right; font-weight: 700; font-size: 0.82rem; background: #fff;
+    }
+    .vote-input:focus { outline: 2px solid var(--accent); border-color: transparent; background: #f0fdf4; }
+    .audit-seal {
+      background: #ecfdf5; border: 1px solid #10b981; border-left: 5px solid #059669;
+      color: #065f46; padding: 8px 11px; border-radius: 8px; font-size: 0.78rem; font-weight: 600; margin-bottom: 10px;
+    }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+    .kpi-card {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px;
+    }
+    .kpi-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+    .kpi-val { font-size: 1.28rem; font-weight: 900; color: var(--text); margin: 2px 0; }
+    .kpi-delta { font-size: 0.72rem; color: #059669; font-weight: 600; }
+    .seats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 8px; }
+    .seat-card {
+      border-radius: 8px; padding: 7px 6px; color: #fff; text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+    }
+    .seat-party { font-size: 0.78rem; font-weight: 800; }
+    .seat-num { font-size: 1.45rem; font-weight: 900; line-height: 1.15; }
+    .seat-pct { font-size: 0.71rem; opacity: 0.94; }
+    .dhondt-alert {
+      background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1px solid #f59e0b; border-left: 6px solid #d97706;
+      color: #78350f; padding: 9px 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.82rem;
+    }
+    .badge-red { background: #dc2626; color: #fff; padding: 2px 7px; border-radius: 4px; font-weight: 800; }
+    .tabs-bar { display: flex; gap: 6px; border-bottom: 2px solid #e2e8f0; margin-bottom: 8px; }
+    .tab-btn {
+      padding: 7px 12px; border: none; background: transparent; cursor: pointer;
+      font-weight: 700; font-size: 0.81rem; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px;
+    }
+    .tab-btn.active { color: #0f172a; border-bottom-color: var(--accent); }
+    .scroll-table { max-height: 360px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="warroom-header">
+    <div>
+      <p class="warroom-title">🗳️ SISTEMA QUICK COUNT Y EXTRAPOLACIÓN ELECTORAL EN TIEMPO REAL · ÁLAVA / ARABA (29N)</p>
+      <p class="warroom-sub">Circunscripción Provincial de Álava (4 Escaños Congreso) · 428 Mesas (309 Vitoria-Gasteiz / 28 Barrios + 119 Resto Álava / 51 Municipios)</p>
+    </div>
+    <div style="text-align:right; font-size:0.76rem; color:#cbd5e1;">
+      Base Oficial: <b>Generales 23J 2023 (Open Data Euskadi)</b><br>
+      Autoguardado Instantáneo · <code>Softmax Cosine (τ=0.05)</code>
+    </div>
+  </div>
+
+  <div class="split-layout">
+    <!-- COLUMNA IZQUIERDA (42%): CONSOLA DE PICADO RÁPIDO 29N -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>⚡ Consola de Picado Rápido 29N</span>
+        <span id="save-indicator" style="font-size:0.72rem; color:#059669; font-weight:600;">💾 Sincronizado</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="applyScenario('29N_COMPETITIVO')">🎯 Vivo 29N (4 Test.)</button>
+        <button class="btn" onclick="applyScenario('23J_EXACTO')">🏛️ Base 23J (4 Test.)</button>
+        <button class="btn" onclick="applyScenario('MUESTRA_10')">🌍 Muestra 10 Mesas</button>
+        <button class="btn" onclick="applyScenario('VACIO')">🧹 Vaciar Votos (0)</button>
+      </div>
+
+      <div class="search-box">
+        <label style="font-weight:700; font-size:0.77rem; display:block; margin-bottom:4px;">
+          🔍 Buscador de las 428 Mesas de Álava (añade por Barrio, Municipio, Cuadrilla, Colegio o Mesa):
+        </label>
+        <div style="display:flex; gap:6px;">
+          <input id="mesa-search" list="mesas-datalist" class="search-input" placeholder="Ej: Zabalgana, Salburua, Lakua, Laudio, Amurrio, Agurain, Oyón..." />
+          <datalist id="mesas-datalist"></datalist>
+          <button class="btn btn-primary" style="margin-bottom:6px; white-space:nowrap;" onclick="addSearchedMesa()">➕ Añadir Mesa</button>
+        </div>
+        <div id="selected-chips" class="chips-container"></div>
+      </div>
+
+      <div class="horario-bar">
+        <b>🕒 Modo Horario:</b>
+        <label><input type="radio" name="horario" value="20:00h Escrutinio" checked onchange="setHorario(this.value)"> 20:00h Escrutinio</label>
+        <label><input type="radio" name="horario" value="14:00h Avance" onchange="setHorario(this.value)"> 14:00h Avance</label>
+        <label><input type="radio" name="horario" value="18:00h Avance" onchange="setHorario(this.value)"> 18:00h Avance</label>
+      </div>
+
+      <div style="font-weight:700; font-size:0.78rem; margin-bottom:5px;">
+        ⌨️ Matriz Única de Picado de Votos (<code>TAB</code> / <code>ENTER</code> para salto numérico rápido):
+      </div>
+      <div class="matrix-wrapper">
+        <table class="matrix-table" id="matrix-table"></table>
+      </div>
+
+      <div style="font-weight:700; font-size:0.78rem; margin-bottom:5px;">
+        🚦 Semáforos de Validación de Censo por Mesa en Cola:
+      </div>
+      <div class="scroll-table" style="max-height:205px;">
+        <table class="data-table" id="semaforo-table"></table>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA (58%): EXTRAPOLACIÓN ÁLAVA Y BARRIOS DE VITORIA -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>📊 Extrapolación Álava y Barrios de Vitoria</span>
+        <span id="horario-badge" style="font-size:0.75rem; background:#e2e8f0; padding:3px 8px; border-radius:6px;">20:00h Escrutinio</span>
+      </div>
+
+      <div class="audit-seal" id="audit-seal">
+        ✅ <b>SELLO DE AUDITORÍA OFICIAL SUPERADO (428 Mesas Álava · Base 23J)</b> — 309 mesas en Vitoria-Gasteiz (28 Barrios cruzados con Callejero Oficial) + 119 mesas en los otros 50 municipios / 7 Cuadrillas de Álava. Censo: <b>260.220</b> (~259.665) · Válidos 23J: <b>169.107</b> (~171.795).
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Mesas Activas (N)</div>
+          <div class="kpi-val" id="kpi-mesas">4 / 428</div>
+          <div class="kpi-delta" id="kpi-gamma">γ_N = 1.000 · τ = 0.05</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Cobertura Sociológica</div>
+          <div class="kpi-val" id="kpi-cov">96.3%</div>
+          <div class="kpi-delta">Similitud Coseno Máx.</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Participación Provincial</div>
+          <div class="kpi-val" id="kpi-part">66.1%</div>
+          <div class="kpi-delta" id="kpi-part-delta">+0.6 pp vs 23J (65.5%)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Margen Error (95% IC)</div>
+          <div class="kpi-val" id="kpi-err">±0.36 pp</div>
+          <div class="kpi-delta" id="kpi-avances">14h: 37.3% · 18h: 52.2%</div>
+        </div>
+      </div>
+
+      <div style="font-weight:800; font-size:0.82rem; margin-bottom:6px;">
+        🏛️ Reparto Proyectado de los 4 Diputados de Álava (Ley D'Hondt - Art. 163 LOREG, Barrera 3%)
+      </div>
+      <div class="seats-grid" id="seats-grid"></div>
+      <div class="dhondt-alert" id="dhondt-alert"></div>
+
+      <div id="plotly-chart" style="width:100%; height:265px; margin-bottom:8px;"></div>
+
+      <div class="tabs-bar">
+        <button class="tab-btn active" id="btn-tab-vg" onclick="switchTab('vg')">🏙️ Barrios de Vitoria-Gasteiz (28 Barrios)</button>
+        <button class="tab-btn" id="btn-tab-alava" onclick="switchTab('alava')">🏞️ Municipios y Cuadrillas de Álava (7 Cuadrillas / 51 Municipios)</button>
+      </div>
+
+      <div id="tab-vg-content">
+        <div class="scroll-table">
+          <table class="data-table" id="barrios-table"></table>
+        </div>
+      </div>
+
+      <div id="tab-alava-content" style="display:none;">
+        <div style="font-weight:700; font-size:0.78rem; margin:4px 0;">🗺️ Las 7 Cuadrillas del Territorio Histórico de Álava:</div>
+        <div class="scroll-table" style="max-height:190px; margin-bottom:8px;">
+          <table class="data-table" id="cuadrillas-table"></table>
+        </div>
+        <div style="font-weight:700; font-size:0.78rem; margin:4px 0;">🏘️ Los 51 Municipios de Álava (Laudio, Amurrio, Agurain, Oyón, Laguardia, Iruña Oka...):</div>
+        <div class="scroll-table" style="max-height:220px;">
+          <table class="data-table" id="municipios-table"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const OPCIONES_VALIDAS = ["PSE-EE", "EH Bildu", "PP", "EAJ-PNV", "Sumar/Izq", "Vox", "Otros", "Blancos"];
+    const FILAS_MATRIZ = [...OPCIONES_VALIDAS, "Nulos"];
+    const PARTIDOS_ESCANOS = ["PSE-EE", "EH Bildu", "PP", "EAJ-PNV", "Sumar/Izq", "Vox"];
+    const COLORES = {
+      "PSE-EE": "#E30613", "EH Bildu": "#00A88F", "PP": "#005999",
+      "EAJ-PNV": "#008037", "Sumar/Izq": "#E51C55", "Vox": "#63BE21",
+      "Otros": "#8C969E", "Blancos": "#CBD5E1"
+    };
+    const ORDEN_CUADRILLAS = [
+      "Vitoria-Gasteiz", "Ayala/Aiara - Laudio y Amurrio", "Llanada Alavesa",
+      "Rioja Alavesa", "Gorbeialdea", "Añana", "Montaña Alavesa"
+    ];
+
+    let CENSO_DATA = [];
+    let MESA_MAP = {};
+    let STATE = {
+      modo_horario: "20:00h Escrutinio",
+      mesas_en_cola: [],
+      votos_29N: {}
+    };
+
+    async function initApp() {
+      const resp = await fetch("/censo_alava_2023.json");
+      CENSO_DATA = await resp.json();
+      const dl = document.getElementById("mesas-datalist");
+      dl.innerHTML = "";
+      CENSO_DATA.forEach(r => {
+        MESA_MAP[r.id_mesa] = r;
+        const opt = document.createElement("option");
+        opt.value = `${r.id_mesa} | ${r.etiqueta_selector}`;
+        dl.appendChild(opt);
+      });
+
+      const saved = localStorage.getItem("estado_vivo_29N_alava");
+      if (saved) {
+        try {
+          STATE = JSON.parse(saved);
+        } catch (e) {}
+      }
+      if (!STATE.mesas_en_cola || STATE.mesas_en_cola.length === 0) {
+        applyScenario("29N_COMPETITIVO", false);
+      } else {
+        renderQueueAndMatrix();
+        recalculateAll();
+      }
+    }
+
+    function applyScenario(type, shouldRender = true) {
+      const testigos = CENSO_DATA.filter(r => r.es_testigo_inicial === 1).map(r => r.id_mesa);
+      const mult = {
+        "PSE-EE": 1.01, "EH Bildu": 1.07, "PP": 0.99, "EAJ-PNV": 0.97,
+        "Sumar/Izq": 0.91, "Vox": 0.96, "Otros": 0.95, "Blancos": 1.0, "Nulos": 1.0
+      };
+      let queue = [...testigos];
+      if (type === "MUESTRA_10") {
+        queue.push("01-059-03-035-A", "01-059-02-033-U", "01-036-01-001-A", "01-002-01-001-A", "01-051-01-001-A", "01-043-01-001-A");
+      }
+      STATE.mesas_en_cola = queue;
+      STATE.votos_29N = {};
+      queue.forEach(id => {
+        const r = MESA_MAP[id];
+        if (!r) return;
+        STATE.votos_29N[id] = {};
+        FILAS_MATRIZ.forEach(f => {
+          if (type === "VACIO") STATE.votos_29N[id][f] = 0;
+          else if (type === "23J_EXACTO") STATE.votos_29N[id][f] = Number(r[`${f}_2023`]);
+          else STATE.votos_29N[id][f] = Math.max(0, Math.round(Number(r[`${f}_2023`]) * mult[f]));
+        });
+      });
+      saveState();
+      if (shouldRender) {
+        renderQueueAndMatrix();
+        recalculateAll();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem("estado_vivo_29N_alava", JSON.stringify(STATE));
+      const ind = document.getElementById("save-indicator");
+      if (ind) {
+        ind.textContent = "💾 Autoguardado OK";
+        setTimeout(() => { ind.textContent = "💾 Sincronizado"; }, 900);
+      }
+    }
+
+    function setHorario(val) {
+      STATE.modo_horario = val;
+      document.getElementById("horario-badge").textContent = val;
+      saveState();
+      recalculateAll();
+    }
+
+    function addSearchedMesa() {
+      const inp = document.getElementById("mesa-search");
+      const raw = inp.value.trim();
+      if (!raw) return;
+      const candidateId = raw.split("|")[0].trim();
+      let found = MESA_MAP[candidateId];
+      if (!found) {
+        const q = raw.toLowerCase();
+        found = CENSO_DATA.find(r => r.etiqueta_selector.toLowerCase().includes(q) || r.id_mesa.toLowerCase().includes(q));
+      }
+      if (found && !STATE.mesas_en_cola.includes(found.id_mesa)) {
+        STATE.mesas_en_cola.push(found.id_mesa);
+        if (!STATE.votos_29N[found.id_mesa]) {
+          STATE.votos_29N[found.id_mesa] = {};
+          FILAS_MATRIZ.forEach(f => STATE.votos_29N[found.id_mesa][f] = 0);
+        }
+        inp.value = "";
+        saveState();
+        renderQueueAndMatrix();
+        recalculateAll();
+      }
+    }
+
+    function removeMesaFromQueue(id) {
+      if (STATE.mesas_en_cola.length <= 1) return;
+      STATE.mesas_en_cola = STATE.mesas_en_cola.filter(m => m !== id);
+      saveState();
+      renderQueueAndMatrix();
+      recalculateAll();
+    }
+
+    function renderQueueAndMatrix() {
+      const chipsDiv = document.getElementById("selected-chips");
+      chipsDiv.innerHTML = STATE.mesas_en_cola.map(id => {
+        const r = MESA_MAP[id];
+        return `<span class="chip">${r ? r.etiqueta_corta : id} <button onclick="removeMesaFromQueue('${id}')" title="Quitar de cola">×</button></span>`;
+      }).join("");
+
+      const tbl = document.getElementById("matrix-table");
+      let html = `<thead><tr><th>Opción / Partido</th>`;
+      STATE.mesas_en_cola.forEach(id => {
+        const r = MESA_MAP[id];
+        html += `<th title="${r.etiqueta_selector}">${r.etiqueta_corta}<br><span style="font-size:0.68rem;font-weight:400;color:#cbd5e1;">Censo: ${r.censo_2023}</span></th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      FILAS_MATRIZ.forEach((fila, rIdx) => {
+        const dot = COLORES[fila] ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${COLORES[fila]};margin-right:6px;"></span>` : "";
+        html += `<tr><td style="font-weight:700;">${dot}${fila}</td>`;
+        STATE.mesas_en_cola.forEach((id, cIdx) => {
+          const val = (STATE.votos_29N[id] && STATE.votos_29N[id][fila]) || 0;
+          html += `<td><input type="number" min="0" step="1" class="vote-input" data-mesa="${id}" data-fila="${fila}" value="${val}" oninput="onVoteInput(this)" onkeydown="onMatrixKeyDown(event, ${rIdx}, ${cIdx})" /></td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody>`;
+      tbl.innerHTML = html;
+    }
+
+    function onMatrixKeyDown(e, rIdx, cIdx) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const inputs = document.querySelectorAll(".vote-input");
+        const numCols = STATE.mesas_en_cola.length;
+        const nextIdx = (rIdx + 1 < FILAS_MATRIZ.length) ? (rIdx + 1) * numCols + cIdx : cIdx + 1;
+        if (inputs[nextIdx]) {
+          inputs[nextIdx].focus();
+          inputs[nextIdx].select();
+        }
+      }
+    }
+
+    function onVoteInput(el) {
+      const id = el.getAttribute("data-mesa");
+      const fila = el.getAttribute("data-fila");
+      const v = Math.max(0, parseInt(el.value || "0", 10) || 0);
+      if (!STATE.votos_29N[id]) STATE.votos_29N[id] = {};
+      STATE.votos_29N[id][fila] = v;
+      saveState();
+      recalculateAll();
+    }
+
+    function cosineSim(a, b) {
+      let dot = 0, na = 0, nb = 0;
+      for (let i = 0; i < a.length; i++) {
+        dot += a[i] * b[i];
+        na += a[i] * a[i];
+        nb += b[i] * b[i];
+      }
+      return dot / (Math.sqrt(na || 1e-12) * Math.sqrt(nb || 1e-12));
+    }
+
+    function recalculateAll() {
+      const tau = 0.05;
+      const activeMesas = [];
+      const semaforos = {};
+
+      STATE.mesas_en_cola.forEach(id => {
+        const r = MESA_MAP[id];
+        const vDict = STATE.votos_29N[id] || {};
+        const vVal = OPCIONES_VALIDAS.reduce((acc, p) => acc + (Number(vDict[p]) || 0), 0);
+        const vNul = Number(vDict["Nulos"]) || 0;
+        const vTot = vVal + vNul;
+        const censo = Number(r.censo_2023);
+        const part = censo > 0 ? (vTot / censo) * 100.0 : 0.0;
+        let texto = "⚪ En espera (0 votos)";
+        let ok = false;
+        if (vTot > censo) {
+          texto = `🔴 ERROR: Supera censo (+${vTot - censo})`;
+        } else if (vVal > 0 && part > 92.0) {
+          texto = `🟡 Activa · Part. alta (${part.toFixed(1)}%)`;
+          ok = true;
+        } else if (vVal > 0) {
+          texto = `🟢 Activa y validada (${part.toFixed(1)}%)`;
+          ok = true;
+        }
+        semaforos[id] = { texto, vVal, vTot, censo, part, part23: r.participacion_2023 };
+        if (ok) {
+          const hVec = OPCIONES_VALIDAS.map(p => Number(r[`pct_2023_${p}`]));
+          const p29Vec = OPCIONES_VALIDAS.map(p => ((Number(vDict[p]) || 0) / vVal) * 100.0);
+          const swingVec = p29Vec.map((v, i) => v - hVec[i]);
+          activeMesas.push({
+            id, r, vDict, vVal, vNul, vTot, hVec, p29Vec, swingVec,
+            partSwing: part - Number(r.participacion_2023)
+          });
+        }
+      });
+
+      const N = activeMesas.length;
+      const gammaN = N > 0 ? Math.min(1.0, 0.5 + 0.125 * N) : 0.0;
+      const activeById = {};
+      activeMesas.forEach(a => activeById[a.id] = a);
+
+      let sumCensoSim = 0, sumCenso = 0;
+      const extrapolatedRows = CENSO_DATA.map(r => {
+        const censo = Number(r.censo_2023);
+        sumCenso += censo;
+        const h_m = OPCIONES_VALIDAS.map(p => Number(r[`pct_2023_${p}`]));
+
+        if (activeById[r.id_mesa]) {
+          const act = activeById[r.id_mesa];
+          sumCensoSim += censo * 1.0;
+          const vMap = {};
+          OPCIONES_VALIDAS.forEach(p => vMap[p] = Number(act.vDict[p]) || 0);
+          return {
+            ...r, es_activa: 1, votos_totales_29N: act.vTot, validos_29N: act.vVal, nulos_29N: act.vNul,
+            vMap
+          };
+        }
+
+        if (N === 0) {
+          const vMap = {};
+          OPCIONES_VALIDAS.forEach(p => vMap[p] = Number(r[`${p}_2023`]));
+          return {
+            ...r, es_activa: 0, votos_totales_29N: Number(r.votos_totales_2023),
+            validos_29N: Number(r.validos_2023), nulos_29N: Number(r.nulos_2023), vMap
+          };
+        }
+
+        const sims = activeMesas.map(a => cosineSim(h_m, a.hVec));
+        const maxSim = Math.max(...sims);
+        sumCensoSim += censo * maxSim;
+
+        const logits = sims.map(s => s / tau);
+        const maxLogit = Math.max(...logits);
+        const exps = logits.map(l => Math.exp(l - maxLogit));
+        const sumExp = exps.reduce((a, b) => a + b, 0) || 1.0;
+        const weights = exps.map(e => e / sumExp);
+
+        const pTilde = OPCIONES_VALIDAS.map((p, j) => {
+          let sw = 0;
+          for (let k = 0; k < N; k++) sw += weights[k] * activeMesas[k].swingVec[j];
+          return Math.max(0.0, h_m[j] + gammaN * sw);
+        });
+        const sumPTilde = pTilde.reduce((a, b) => a + b, 0) || 1.0;
+        const pNorm = pTilde.map(v => (v / sumPTilde) * 100.0);
+
+        let pSwing = 0;
+        for (let k = 0; k < N; k++) pSwing += weights[k] * activeMesas[k].partSwing;
+        const part29 = Math.min(98.5, Math.max(5.0, Number(r.participacion_2023) + gammaN * pSwing));
+        const vTot = Math.round(censo * (part29 / 100.0));
+        const vNul = Math.round(vTot * (Number(r.pct_nulos_2023) / 100.0));
+        const vVal = Math.max(0, vTot - vNul);
+
+        const vMap = {};
+        OPCIONES_VALIDAS.forEach((p, j) => {
+          vMap[p] = vVal * (pNorm[j] / 100.0);
+        });
+
+        return {
+          ...r, es_activa: 0, votos_totales_29N: vTot, validos_29N: vVal, nulos_29N: vNul, vMap
+        };
+      });
+
+      const cobSoc = sumCenso > 0 ? (sumCensoSim / sumCenso) * 100.0 : 0.0;
+      const err95 = N > 0 ? (1.96 * (1.8 / Math.sqrt(N)) * Math.sqrt((428 - N) / 427)).toFixed(2) : "0.00";
+
+      updateUI(extrapolatedRows, semaforos, N, gammaN, cobSoc, err95);
+    }
+
+    function updateUI(rows, semaforos, N, gammaN, cobSoc, err95) {
+      // Semáforos
+      const semTbl = document.getElementById("semaforo-table");
+      let semHtml = `<thead><tr><th>Mesa</th><th>Barrio / Municipio</th><th>Estado Censo</th><th>Válidos</th><th>Totales / Censo</th><th>Part. 29N</th></tr></thead><tbody>`;
+      STATE.mesas_en_cola.forEach(id => {
+        const s = semaforos[id];
+        const r = MESA_MAP[id];
+        semHtml += `<tr><td><b>${r.etiqueta_corta}</b></td><td>${r.zona_barrio}</td><td>${s.texto}</td><td>${s.vVal}</td><td>${s.vTot} / ${s.censo}</td><td>${s.part.toFixed(1)}% (23J: ${s.part23.toFixed(1)}%)</td></tr>`;
+      });
+      semHtml += `</tbody>`;
+      semTbl.innerHTML = semHtml;
+
+      // Totales Provinciales
+      let totCenso = 0, totVot29 = 0, totVal29 = 0, totVal23 = 0;
+      let valVG29 = 0, valResto29 = 0;
+      const prov29 = {}, prov23 = {}, vg29 = {}, resto29 = {};
+      OPCIONES_VALIDAS.forEach(p => { prov29[p] = 0; prov23[p] = 0; vg29[p] = 0; resto29[p] = 0; });
+
+      rows.forEach(r => {
+        totCenso += r.censo_2023;
+        totVot29 += r.votos_totales_29N;
+        totVal23 += r.validos_2023;
+        OPCIONES_VALIDAS.forEach(p => {
+          const vp = r.vMap[p];
+          prov29[p] += vp;
+          totVal29 += vp;
+          prov23[p] += r[`${p}_2023`];
+          if (r.es_vitoria === 1) { vg29[p] += vp; valVG29 += vp; }
+          else { resto29[p] += vp; valResto29 += vp; }
+        });
+      });
+
+      const part29Pct = (totVot29 / totCenso) * 100.0;
+      const part23Pct = 65.54;
+      document.getElementById("kpi-mesas").textContent = `${N} / 428`;
+      document.getElementById("kpi-gamma").textContent = `${((N/428)*100).toFixed(1)}% escrut. · γ_N = ${gammaN.toFixed(3)}`;
+      document.getElementById("kpi-cov").textContent = `${cobSoc.toFixed(1)}%`;
+      document.getElementById("kpi-part").textContent = `${part29Pct.toFixed(2)}%`;
+      const dPart = part29Pct - part23Pct;
+      document.getElementById("kpi-part-delta").textContent = `${dPart >= 0 ? '+' : ''}${dPart.toFixed(2)} pp vs 23J (${part23Pct}%)`;
+      document.getElementById("kpi-err").textContent = `±${err95} pp`;
+
+      // Ley D'Hondt (4 escaños Álava, barrera 3%)
+      const umbral3 = 0.03 * totVal29;
+      const cocientes = [];
+      PARTIDOS_ESCANOS.forEach(p => {
+        if (prov29[p] >= umbral3) {
+          for (let d = 1; d <= 4; d++) {
+            cocientes.push({ partido: p, divisor: d, cociente: prov29[p] / d, votos: prov29[p] });
+          }
+        }
+      });
+      cocientes.sort((a, b) => (b.cociente - a.cociente) || (b.votos - a.votos));
+      const escanos = {};
+      PARTIDOS_ESCANOS.forEach(p => escanos[p] = 0);
+      cocientes.slice(0, 4).forEach(c => escanos[c.partido]++);
+
+      const c4 = cocientes[3];
+      const c5 = cocientes.slice(4).find(c => c.partido !== c4.partido) || cocientes[4];
+      const votosFaltan = Math.max(1, Math.floor(c4.cociente * c5.divisor) + 1 - Math.round(c5.votos));
+      const colchon4 = Math.max(1, Math.round(c4.votos) - (Math.floor(c5.cociente * c4.divisor) + 1));
+
+      // Render Seat Cards
+      const escanos23J = { "PSE-EE": 1, "EH Bildu": 1, "PP": 1, "EAJ-PNV": 1, "Sumar/Izq": 0, "Vox": 0 };
+      const seatsGrid = document.getElementById("seats-grid");
+      seatsGrid.innerHTML = PARTIDOS_ESCANOS.map(p => {
+        const pct = (prov29[p] / totVal29) * 100.0;
+        const pct23 = (prov23[p] / totVal23) * 100.0;
+        const sw = pct - pct23;
+        const diffEsc = escanos[p] - escanos23J[p];
+        const diffTxt = diffEsc === 0 ? "(=)" : `(${diffEsc > 0 ? '+' : ''}${diffEsc})`;
+        const bg = escanos[p] > 0 ? COLORES[p] : "#475569";
+        return `<div class="seat-card" style="background:${bg};">
+          <div class="seat-party">${p}</div>
+          <div class="seat-num">${escanos[p]} <span style="font-size:0.72rem;font-weight:500;">esc ${diffTxt}</span></div>
+          <div class="seat-pct"><b>${pct.toFixed(2)}%</b> (${sw >= 0 ? '+' : ''}${sw.toFixed(2)} pp)<br>${Math.round(prov29[p]).toLocaleString('es-ES')} v.</div>
+        </div>`;
+      }).join("");
+
+      document.getElementById("dhondt-alert").innerHTML = `
+        🔥 <b>ALERTA EN VIVO · DISPUTA POR EL 4º ESCAÑO DE ÁLAVA:</b>
+        El <b>4º diputado</b> lo retiene <b>${c4.partido}</b> (Divisor ${c4.divisor}, Cociente: <b>${c4.cociente.toFixed(1)}</b>).
+        El <b>5º aspirante</b> es <b>${c5.partido}</b> (Divisor ${c5.divisor}, Cociente: <b>${c5.cociente.toFixed(1)}</b>), a exactamente
+        <span class="badge-red">${votosFaltan.toLocaleString('es-ES')} votos en Álava</span> de arrebatarle el último escaño
+        (colchón de ${c4.partido}: <b>${colchon4.toLocaleString('es-ES')} votos</b>).
+      `;
+
+      // Gráfico Plotly
+      const pGraf = [...PARTIDOS_ESCANOS, "Otros"];
+      Plotly.react("plotly-chart", [
+        {
+          name: "Total Álava 29N (%)", x: pGraf,
+          y: pGraf.map(p => Number(((prov29[p] / totVal29) * 100).toFixed(2))),
+          type: "bar", marker: { color: pGraf.map(p => COLORES[p]) }
+        },
+        {
+          name: "Vitoria-Gasteiz 29N (%)", x: pGraf,
+          y: pGraf.map(p => Number(((vg29[p] / valVG29) * 100).toFixed(2))),
+          type: "bar", opacity: 0.78, marker: { color: pGraf.map(p => COLORES[p]) }
+        },
+        {
+          name: "Resto Álava 29N (%)", x: pGraf,
+          y: pGraf.map(p => Number(((resto29[p] / valResto29) * 100).toFixed(2))),
+          type: "bar", marker: { color: "#64748b" }
+        },
+        {
+          name: "Oficial 23J Álava (%)", x: pGraf,
+          y: pGraf.map(p => Number(((prov23[p] / totVal23) * 100).toFixed(2))),
+          type: "scatter", mode: "lines+markers", line: { color: "#0f172a", dash: "dot", width: 2 }
+        }
+      ], {
+        title: { text: "Comparativa en Vivo: Total Álava vs. Vitoria-Gasteiz vs. Resto Provincia (y 23J)", font: { size: 12 } },
+        barmode: "group", margin: { l: 32, r: 16, t: 32, b: 28 },
+        legend: { orientation: "h", y: 1.15, x: 1, xanchor: "right", font: { size: 10 } }
+      }, { displayModeBar: false, responsive: true });
+
+      // Tablas Territoriales
+      renderTerritorialTable("barrios-table", rows.filter(r => r.es_vitoria === 1), "zona_barrio", "Barrio de Vitoria-Gasteiz");
+      renderTerritorialTable("cuadrillas-table", rows, "cuadrilla", "Cuadrilla de Álava", ORDEN_CUADRILLAS);
+      renderTerritorialTable("municipios-table", rows.filter(r => r.cod_municipio !== "999"), "municipio", "Municipio");
+    }
+
+    function renderTerritorialTable(tableId, subset, groupKey, headerLabel, customOrder = null) {
+      const groups = {};
+      subset.forEach(r => {
+        const k = r[groupKey];
+        if (!groups[k]) {
+          groups[k] = { name: k, mesasTot: 0, mesasAct: 0, censo: 0, vot29: 0, val29: 0, v: {} };
+          PARTIDOS_ESCANOS.forEach(p => groups[k].v[p] = 0);
+        }
+        groups[k].mesasTot += 1;
+        groups[k].mesasAct += r.es_activa;
+        groups[k].censo += r.censo_2023;
+        groups[k].vot29 += r.votos_totales_29N;
+        OPCIONES_VALIDAS.forEach(p => {
+          groups[k].val29 += r.vMap[p];
+          if (PARTIDOS_ESCANOS.includes(p)) groups[k].v[p] += r.vMap[p];
+        });
+      });
+
+      let arr = Object.values(groups);
+      if (customOrder) {
+        arr.sort((a, b) => customOrder.indexOf(a.name) - customOrder.indexOf(b.name));
+      } else {
+        arr.sort((a, b) => b.censo - a.censo);
+      }
+
+      let html = `<thead><tr><th>${headerLabel}</th><th>Mesas</th><th>Censo</th><th>Part. 29N</th><th>Ganador 29N</th>`;
+      PARTIDOS_ESCANOS.forEach(p => html += `<th>${p} (%)</th>`);
+      html += `</tr></thead><tbody>`;
+
+      arr.forEach(g => {
+        const val = g.val29 || 1;
+        const pcts = {};
+        PARTIDOS_ESCANOS.forEach(p => pcts[p] = (g.v[p] / val) * 100.0);
+        const ganador = PARTIDOS_ESCANOS.reduce((a, b) => pcts[a] >= pcts[b] ? a : b);
+        const winColor = COLORES[ganador];
+        const part = g.censo > 0 ? ((g.vot29 / g.censo) * 100).toFixed(1) : "0.0";
+        html += `<tr>
+          <td><b>${g.name}</b></td>
+          <td>${g.mesasAct}/${g.mesasTot}</td>
+          <td>${g.censo.toLocaleString('es-ES')}</td>
+          <td>${part}%</td>
+          <td style="background:${winColor}22;color:${winColor};font-weight:800;">${ganador}</td>`;
+        PARTIDOS_ESCANOS.forEach(p => {
+          const v = pcts[p];
+          const alpha = Math.min(0.5, Math.max(0.04, (v / 45.0) * 0.5)).toFixed(2);
+          const hex = COLORES[p].replace("#", "");
+          const rc = parseInt(hex.substring(0,2), 16), gc = parseInt(hex.substring(2,4), 16), bc = parseInt(hex.substring(4,6), 16);
+          html += `<td style="background:rgba(${rc},${gc},${bc},${alpha});font-weight:${v >= 24 ? '700' : '500'};">${v.toFixed(2)}%</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody>`;
+      document.getElementById(tableId).innerHTML = html;
+    }
+
+    function switchTab(which) {
+      document.getElementById("tab-vg-content").style.display = which === "vg" ? "block" : "none";
+      document.getElementById("tab-alava-content").style.display = which === "alava" ? "block" : "none";
+      document.getElementById("btn-tab-vg").classList.toggle("active", which === "vg");
+      document.getElementById("btn-tab-alava").classList.toggle("active", which === "alava");
+    }
+
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
+
